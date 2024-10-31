@@ -24,6 +24,11 @@ type Director struct {
 var movies []Movies
 
 func getMovies(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.Header().Set("allow", http.MethodGet)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	w.Header().Set("content-type", "application/json")
 	if err := json.NewEncoder(w).Encode(movies); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -108,6 +113,12 @@ func insertMovies() {
 	movies = append(movies, Movies{ID: "4", Isbn: "448746", Title: "Movie Four", Director: &Director{FirstName: "Mike", LastName: "Smith"}})
 }
 
+func methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusMethodNotAllowed)
+	w.Write([]byte(`{"error": "method not allowed"}`))
+}
+
 func main() {
 	insertMovies()
 	r := mux.NewRouter()
@@ -116,6 +127,7 @@ func main() {
 	r.HandleFunc("/movies", createMovie).Methods(http.MethodPost)
 	r.HandleFunc("/movies/{id}", updateMovie).Methods(http.MethodPut)
 	r.HandleFunc("/movies/{id}", deleteMovie).Methods(http.MethodDelete)
+	r.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
 	fmt.Println("Starting server at port 8080")
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
