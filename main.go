@@ -57,12 +57,30 @@ func createMovie(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "error decoding r.body", http.StatusInternalServerError)
 		return
 	}
-
 	movies = append(movies, movie)
 	w.WriteHeader(http.StatusCreated)
 }
 
-func updateMovie(w http.ResponseWriter, r *http.Request) {}
+func updateMovie(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	var movieFromBody Movies
+	if err := json.NewDecoder(r.Body).Decode(&movieFromBody); err != nil {
+		http.Error(w, "error decoding r.body", http.StatusInternalServerError)
+		return
+	}
+
+	id := mux.Vars(r)["id"]
+	for index, item := range movies {
+		if item.ID == id {
+			movies[index].Director = movieFromBody.Director
+			movies[index].Isbn = movieFromBody.Isbn
+			movies[index].Title = movieFromBody.Title
+			w.WriteHeader(http.StatusAccepted)
+			break
+		}
+	}
+	w.WriteHeader(http.StatusNotFound)
+}
 
 func deleteMovie(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "application/json")
