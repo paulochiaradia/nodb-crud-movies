@@ -37,7 +37,23 @@ func createMovie(w http.ResponseWriter, r *http.Request) {
 
 func updateMovie(w http.ResponseWriter, r *http.Request) {}
 
-func deleteMovie(w http.ResponseWriter, r *http.Request) {}
+func deleteMovie(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	found := false
+	for index, movie := range movies {
+		if movie.ID == id {
+			movies = append(movies[:index], movies[index+1:]...)
+			found = true
+			break
+		}
+	}
+	if !found {
+		http.Error(w, "movie not found", http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+
+}
 
 func insertMovies() {
 	movies = append(movies, Movies{ID: "1", Isbn: "448743", Title: "Movie One", Director: &Director{FirstName: "John", LastName: "Doe"}})
