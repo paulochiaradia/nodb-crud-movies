@@ -51,6 +51,15 @@ func getMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func createMovie(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	var movie Movies
+	if err := json.NewDecoder(r.Body).Decode(&movie); err != nil {
+		http.Error(w, "error decoding r.body", http.StatusInternalServerError)
+		return
+	}
+
+	movies = append(movies, movie)
+	w.WriteHeader(http.StatusCreated)
 }
 
 func updateMovie(w http.ResponseWriter, r *http.Request) {}
