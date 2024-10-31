@@ -30,7 +30,25 @@ func getMovies(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getMovie(w http.ResponseWriter, r *http.Request) {}
+func getMovie(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
+	id := mux.Vars(r)["id"]
+	found := false
+	for _, item := range movies {
+		if item.ID == id {
+			found = true
+			w.WriteHeader(http.StatusFound)
+			if err := json.NewEncoder(w).Encode(item); err != nil {
+				http.Error(w, "enconding error", http.StatusInternalServerError)
+				break
+			}
+		}
+	}
+	if !found {
+		http.Error(w, "movie not found", http.StatusNotFound)
+		return
+	}
+}
 
 func createMovie(w http.ResponseWriter, r *http.Request) {
 }
@@ -38,6 +56,7 @@ func createMovie(w http.ResponseWriter, r *http.Request) {
 func updateMovie(w http.ResponseWriter, r *http.Request) {}
 
 func deleteMovie(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", "application/json")
 	id := mux.Vars(r)["id"]
 	found := false
 	for index, movie := range movies {
